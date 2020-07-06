@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Axios from 'axios';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 
 import * as constants from './constants';
 //import { KEY } from './GUARDIAN_API_KEY'
@@ -15,6 +16,19 @@ export default function App() {
   const test = 'a';
   let counter = 0;
 
+  const styles = StyleSheet.create({
+    container: {
+      ...StyleSheet.absoluteFillObject,
+      height: 400,
+      width: 400,
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    map: {
+      ...StyleSheet.absoluteFillObject,
+    },
+  });
+
   useEffect(() => {
     Axios.get(openWeatherUrl).then(res => {
       setContent(res)
@@ -27,10 +41,16 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-      {content && <Text>{JSON.stringify(content)}</Text>}
-      {error && <Text>{JSON.stringify(error)}</Text>}
+      <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          initialRegion={{
+            latitude: 37.78825,
+            longitude: -122.4324,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+      />
     </View>
   );
 }
