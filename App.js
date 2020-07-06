@@ -31,45 +31,21 @@ export default function App() {
   const listRef = useRef(null);
 
   const onViewableItemsChanged = ({ viewableItems, changed }) => console.log("itemsChanged")//setViewableItems({viewableItems})
-  const saveRef = r=>refs=r;
-  const onViewRef = React.useRef((viewableItems)=> {
+  const onViewRef = React.useRef(({viewableItems: viewable, changed})=> {
+    console.log("viewableItems")
+    console.log(viewable)
+    console.log("changed")
+    console.log(changed)
     console.log(viewableItems)
+    if (!_.isEqual(viewable, viewableItems)) {
+      setViewableItems(viewable);
+    }
+    return viewableItems;
     // Use viewable items in state or as intended
   })
+  const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 100 })
 
-  const styles = StyleSheet.create({
-    container: {
-      ...StyleSheet.absoluteFillObject,
-      height: 400,
-      width: 400,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-    },
-    map: {
-      ...StyleSheet.absoluteFillObject,
-    },
-    container2: {
-      flex: 1,
-      /*backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',*/
-    },
-    itemContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      margin: 5,
-    },
-    itemText: {
-      backgroundColor: 'gray',
-      padding: 20,
-      marginHorizontal: 16,
-    },
-    avatar: {
-      height: 50,
-      width: 50,
-    }
-  });
+
 
   useEffect(() => {
     Axios.get(openWeatherUrl).then(res => {
@@ -107,10 +83,11 @@ console.log(MockPersonList)
           ref={listRef}//create refrence point to enable scrolling
           keyExtractor={item => item.id}//map your keys to whatever unique ids the have (mine is a "id" prop)
           renderItem={({item}) => <Item {...item}/>}//render each item
-          //onViewableItemsChanged={onViewRef.current}
+          onViewableItemsChanged={onViewRef.current}
+          viewabilityConfig={viewConfigRef.current}
       />
       <Pagination
-          // dotThemeLight //<--use with backgroundColor:"grey"
+          dotThemeLight //<--use with backgroundColor:"grey"
           listRef={listRef.current}//to allow React Native Pagination to scroll to item when clicked  (so add "ref={r=>this.refs=r}" to your list)
           paginationVisibleItems={viewableItems}//needs to track what the user sees
           paginationItems={items}//pass the same list as data
@@ -120,3 +97,39 @@ console.log(MockPersonList)
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    height: 400,
+    width: 400,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  container2: {
+    flex: 1,
+    backgroundColor: 'grey',
+    /*backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',*/
+  },
+  itemContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 5,
+  },
+  itemText: {
+    flexGrow: 1,
+    backgroundColor: 'white',
+    padding: 20,
+    marginHorizontal: 10,
+    marginRight: 40,
+  },
+  avatar: {
+    height: 50,
+    width: 50,
+  }
+});
