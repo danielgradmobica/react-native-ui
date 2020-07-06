@@ -114,11 +114,18 @@ console.log(MockPersonList)
           }}
       />*/}
       <FlatList
-          data={MockPersonList}
+          data={items}
           //ref={saveRef}//create refrence point to enable scrolling
           keyExtractor={item => item.id}//map your keys to whatever unique ids the have (mine is a "id" prop)
           renderItem={({item}) => <Item {...item}/>}//render each item
           //onViewableItemsChanged={onViewRef.current}
+      />
+      <Pagination
+          // dotThemeLight //<--use with backgroundColor:"grey"
+          //listRef={this.refs}//to allow React Native Pagination to scroll to item when clicked  (so add "ref={r=>this.refs=r}" to your list)
+          paginationVisibleItems={viewableItems}//needs to track what the user sees
+          paginationItems={items}//pass the same list as data
+          paginationItemPadSize={3} //num of items to pad above and below your visable items
       />
     </SafeAreaView>
   );
