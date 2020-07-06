@@ -28,19 +28,8 @@ export default function App() {
   const [viewableItems, setViewableItems] = useState([]);
   //const contentUrl = `${constants.GUARDIAN_API_URL}${constants.CONTENT_ENDPOINT}?api-key=${KEY}`;
   const openWeatherUrl = `${constants.OPEN_WEATHER_API_URL}?appid=${KEY}&q=London`;
-  let refs = null;
+  const listRef = useRef(null);
 
-
-
-  const _renderItem = ({item}) => {
-    return (<div index={item.id}
-               onPressItem={() => console.log("pressed item ",item.index)}
-               name={item.name}
-               createTagColor
-    >{item.avatar}</div>)
-  };
-
-  const _keyExtractor = (item, index) => item.id;
   const onViewableItemsChanged = ({ viewableItems, changed }) => console.log("itemsChanged")//setViewableItems({viewableItems})
   const saveRef = r=>refs=r;
   const onViewRef = React.useRef((viewableItems)=> {
@@ -115,14 +104,14 @@ console.log(MockPersonList)
       />*/}
       <FlatList
           data={items}
-          //ref={saveRef}//create refrence point to enable scrolling
+          ref={listRef}//create refrence point to enable scrolling
           keyExtractor={item => item.id}//map your keys to whatever unique ids the have (mine is a "id" prop)
           renderItem={({item}) => <Item {...item}/>}//render each item
           //onViewableItemsChanged={onViewRef.current}
       />
       <Pagination
           // dotThemeLight //<--use with backgroundColor:"grey"
-          //listRef={this.refs}//to allow React Native Pagination to scroll to item when clicked  (so add "ref={r=>this.refs=r}" to your list)
+          listRef={listRef.current}//to allow React Native Pagination to scroll to item when clicked  (so add "ref={r=>this.refs=r}" to your list)
           paginationVisibleItems={viewableItems}//needs to track what the user sees
           paginationItems={items}//pass the same list as data
           paginationItemPadSize={3} //num of items to pad above and below your visable items
