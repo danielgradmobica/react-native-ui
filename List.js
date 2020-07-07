@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
-import { StyleSheet, Text, View, FlatList, Button, Image } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, Image, TouchableOpacity } from 'react-native';
 import Axios from 'axios';
-import faker from 'faker';
 import _ from 'lodash';
 import Pagination from 'react-native-pagination';
 
@@ -10,21 +9,9 @@ import * as constants from './constants';
 import { KEY } from './OPEN_WEATHER_API_KEY';
 
 function List(props) {
-    console.log("LIST PROPS", props.coordinates)
-    let MockPersonList = new _.times(35,(i)=>{
-        return {
-            id:i,
-            index:i,
-            name:faker.name.findName(),
-            avatar:faker.internet.avatar(),
-        }
-    })
-
     const [viewableItems, setViewableItems] = useState([]);
     const [weather, setWeather] = useState(null);
-    const openWeatherUrl = props.coordinates ? `${constants.OPEN_WEATHER_API_URL}?${constants.DEFAULT_QUERY_PARAMS}&lat=${props.coordinates.latitude}&lon=${props.coordinates.longitude}&appid=${KEY}` : null;
     const listRef = useRef(null);
-
     const onViewRef = React.useRef(({viewableItems: viewable, changed})=> {
         if (!_.isEqual(viewable, viewableItems)) {
             setViewableItems(viewable);
@@ -33,9 +20,11 @@ function List(props) {
     })
     const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 100 })
 
+    const openWeatherUrl = props.coordinates ? `${constants.OPEN_WEATHER_API_URL}?${constants.DEFAULT_QUERY_PARAMS}&lat=${props.coordinates.latitude}&lon=${props.coordinates.longitude}&appid=${KEY}` : null;
+
     useEffect(() => {
         if (openWeatherUrl) {
-            console.log("Fetching Weather Data", props.coordinates)
+            console.log("Fetching Weather Data for:", props.coordinates)
             Axios.get(openWeatherUrl).then(res => {
                 const response = res.data;
                 setWeather({
@@ -56,10 +45,16 @@ function List(props) {
                     })),
                 });
             }).catch(err => {
-                console.log(openWeatherUrl, JSON.stringify(err))
+                console.error(openWeatherUrl, JSON.stringify(err))
             });
         }
     }, [props.coordinates]);
+
+    const parseEpochToHours = epochTime => {
+        const date = new Date;
+        date.setUTCSeconds(epochTime);
+        return date.getHours();
+    }
 
     const Item = props => {
         return (
@@ -67,35 +62,48 @@ function List(props) {
                 <Image style={styles.icon} source={{
                     uri: `${constants.OPEN_WEATHER_ICONS_URL}${props.icon}${constants.ICONS_POSTFIX}`,
                 }}/>
-                <Text style={styles.itemText}>{props.index+1} {props.name}</Text>
+                <Text style={styles.itemText}>{parseEpochToHours(props.dt)}</Text>
+                <Text style={styles.itemText}>{props.description}</Text>
+                <Text style={styles.itemText}>{props.temp} °C</Text>
+                <Text style={styles.itemText}>Clouds: {props.clouds}%</Text>
             </View>
         );
     }
-    //console.log(weather)
-    console.log("forecast", weather && weather.forecast)
+
     return (
         <View style={styles.container}>
-            <View style={styles.currentWeather}>
+            <TouchableOpacity
+                style={styles.currentWeather}
+                onPress={() => props.navigation.navigate('Map')}
+            >
                 {props.coordinates && weather ? (
-                    <Text>
-                        Current location: {weather.location}
-                    </Text>
+                    <React.Fragment>
+                        <View style={styles.mainIcon}>
+                            <Image style={styles.icon} source={{
+                                uri: `${constants.OPEN_WEATHER_ICONS_URL}${weather.current.icon}${constants.ICONS_POSTFIX}`,
+                            }}/>
+                            <Text>{weather.location}</Text>
+                        </View>
+                        <View>
+                            <Text>{parseEpochToHours(weather.current.dt)}</Text>
+                            <Text>{weather.current.description}</Text>
+                            <Text>{weather.current.temp} °C</Text>
+                            <Text>Clouds: {weather.current.clouds}%</Text>
+                        </View>
+                    </React.Fragment>
                 ) : (
                     <Text>
-                        No location selected
+                        Tap to select location
                     </Text>
                 )}
-            </View>
-            <Button
-                title="Select location"
-                onPress={() => props.navigation.navigate('Map')}
-            />
+            </TouchableOpacity>
             {weather && weather.forecast && (
                 <React.Fragment>
                     <FlatList
+                        horizontal
                         data={weather.forecast}
                         ref={listRef}
-                        keyExtractor={item => item.dt}
+                        keyExtractor={item => item.dt.toString()}
                         renderItem={({item}) => <Item {...item}/>}
                         onViewableItemsChanged={onViewRef.current}
                         viewabilityConfig={viewConfigRef.current}
@@ -118,23 +126,35 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'deepskyblue',
-        paddingVertical: 150,
+        paddingVertical: 50,
     },
     currentWeather: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexGrow: 0.5,
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
         backgroundColor: 'skyblue',
+        marginBottom: 50,
+        marginHorizontal: 25,
+    },
+    mainIcon: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-evenly',
     },
     itemContainer: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
         margin: 5,
+        paddingHorizontal: 5,
         backgroundColor: 'skyblue',
+        width: 100,
     },
     itemText: {
         flexGrow: 1,
-        padding: 20,
-        marginHorizontal: 10,
-        marginRight: 40,
     },
     icon: {
         height: 50,
