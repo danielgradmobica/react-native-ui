@@ -11,5 +11,4 @@ web-build/
 
 # macOS
 .DS_Store
-GUARDIAN_API_KEY.js
-OPEN_WEATHER_API_KEY.js
+./OPEN_WEATHER_API_KEY.js
